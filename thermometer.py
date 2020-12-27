@@ -11,6 +11,8 @@ import paho.mqtt.client as mqtt
 from yaml import safe_load
 from logging import config
 
+logger = logging.getLogger('main')
+
 def signal_terminate(sig, frame):
     global logger
     logger.info('We got a request to terminate! Quitting...')
