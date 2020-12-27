@@ -15,23 +15,24 @@ handlers:
         address: /dev/log
         facility: local0
 
-    rotating_file:
-        class: logging.handlers.RotatingFileHandler
-        level: DEBUG
-        formatter: debug
-        filename: /var/log/pumpmeup.log
-        maxBytes: 10485760 # 10MB
-        backupCount: 20
-        encoding: utf8
+#   rotating_file:
+#        class: logging.handlers.RotatingFileHandler
+#        level: DEBUG
+#        formatter: debug
+#        filename: /var/log/pumpmeup.log
+#        maxBytes: 10485760 # 10MB
+#        backupCount: 20
+#        encoding: utf8
+
     stdout:
         class: logging.StreamHandler
         level: DEBUG
-        stream: sys.stdout
+        stream: ext://sys.stdout
         formatter: debug
 
 root:
     level: DEBUG
-    handlers: [stdout,rotating_file]
+    handlers: [stdout]
     propagate: no
 
 loggers:

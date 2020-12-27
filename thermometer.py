@@ -19,26 +19,27 @@ parser.add_argument('--debug',action='store_true',help='print debug messages to 
 args = parser.parse_args()
 
 logger = logging.getLogger('main')
+root_logger = logging.getLogger()
 
 script_path = os.path.dirname(os.path.realpath(__file__))
 
 def debug_message(message):
-    global logger
-    global args
-
     if args.debug:
-        logger.debug(message)
+        root_logger.debug(message)
 
-def signal_terminate(sig, frame):
-    debug_message('We got a request to terminate! Quitting...')
-    sys.exit(0)
+def signal_catcher(signalNumber, frame):
+    if signalNumber == signal.SIGTERM: # SIGTERM
+        logger.info('We got a request to terminate! Quitting...')
+        sys.exit(0)
+    if signalNumber == 1: # SIGHUP
+        logger.info('Restart of the thermometer was requested! Restarting...')
+    if signalNumber == 2: # SIGINT
+        logger.info('We got a request to terminate! Quitting...')
+        sys.exit(0)
 
-def signal_restart(sig, frame):
-    debug_message('Restart of the thermometer was requested! Restarting...')
-    # sys.exit(0)
-
-signal.signal(signal.SIGTERM, signal_terminate)
-signal.signal(signal.SIGHUP, signal_restart)
+signal.signal(signal.SIGTERM, signal_catcher)
+signal.signal(signal.SIGHUP, signal_catcher)
+signal.signal(signal.SIGINT, signal_catcher)
 
 log_config = safe_load(open('{}/config.yml'.format(script_path)))
 config.dictConfig(log_config)
