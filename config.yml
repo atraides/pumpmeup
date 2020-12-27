@@ -3,7 +3,7 @@ disable_existing_loggers: true
 
 formatters:
     default:
-        format: "[%(processName)d] %(name)s - %(levelname)s: %(message)s"
+        format: "[%(processName)s] %(name)s - %(levelname)s: %(message)s"
 
 handlers:
     syslog:
