@@ -9,8 +9,8 @@ import paho.mqtt.client as mqtt
 
 from yaml import safe_load
 
-log_config = safe_load(open('config.yml'))
-logging.config.dictConfig(log_config)
+config = safe_load(open('config.yml'))
+logging.config.dictConfig(config)
 
 logger = logging.getLogger("main")
 
