@@ -46,3 +46,6 @@ thermostat:
     pin: board.D4
     type: 'DHT22'
     interval: 60
+    location:
+        floor: 'basement'
+        room: 'study'

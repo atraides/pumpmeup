@@ -32,16 +32,27 @@ def gracefull_exit():
     if mqtt_client:
         mqtt_client.loop_stop()
         mqtt_client.disconnect()
+    if thermostat:
+        thermostat.exit()
     sys.exit(0)
 
 def main():
     global mqtt_client
+    global thermostat
     # Initialize the thermostat
     if 'thermostat' in config:
-        thermostat = config.get('thermostat')
-        thermostat_device = adafruit_dht.DHT22(board.D4)
-        measure_interval = thermostat.get('interval')
         next_reading = time.time()
+        thermostat_config = config.get('thermostat')
+        thermostat = adafruit_dht.DHT22(board.D4)
+        if 'interval' in thermostat_config:
+            measure_interval = thermostat_config.get('interval')
+        else:
+            measure_interval = 60
+
+        if 'location' in thermostat_config:
+            thermostat_location = thermostat_config.get('location')
+        else:
+            thermostat_location = { 'floor': 'default', 'room': 'default'}
 
         mqtt_connected = False
         mqtt_client = mqtt.Client(MQTT_CLIENT_ID)
@@ -60,19 +71,19 @@ def main():
 
         while True:
             try:
-                temperature = thermostat_device.temperature
-                humidity = thermostat_device.humidity
+                temperature = thermostat.temperature
+                humidity = thermostat.humidity
                 debug_message("Temp: {:.1f} °C - Humidity: {}% ".format(temperature, humidity))
 
-                mqtt_client.publish('v1/millhouse/basement/study/temperature', temperature, 1)
-                mqtt_client.publish('v1/millhouse/basement/study/humidity', humidity, 1)
+                mqtt_client.publish('v1/millhouse/{}/{}/temperature'.format(thermostat_location.get('floor'),thermostat_location.get('room')), temperature, 1)
+                mqtt_client.publish('v1/millhouse/{}/{}/humidity'.format(thermostat_location.get('floor'),thermostat_location.get('room')), humidity, 1)
             except RuntimeError as error:
                 # Errors happen fairly often, DHT's are hard to read, just keep going
                 logger.error('The following DHT error occured: {}'.format(error.args[0]))
                 time.sleep(2.0)
                 continue
             except Exception as error:
-                thermostat_device.exit()
+                thermostat.exit()
                 raise error
 
             next_reading += measure_interval
