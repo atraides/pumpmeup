@@ -15,7 +15,6 @@ from logging import config
 
 logger = logging.getLogger('main')
 script_path = os.path.dirname(os.path.realpath(__file__))
-print(script_path)
 
 def signal_terminate(sig, frame):
     global logger
