@@ -33,17 +33,12 @@ config.dictConfig(log_config)
 
 # Initial the dht device, with data pin connected to:
 dhtDevice = adafruit_dht.DHT22(board.D4)
+INTERVAL=10
+sensor_data = {'temperature': 0, 'humidity': 0}
+next_reading = time.time()
 
 # THINGSBOARD_HOST = '10.42.0.195'
 # ACCESS_TOKEN = 'DHT22_DEMO_TOKEN'
-
-# Data capture and upload interval in seconds. Less interval will eventually hang the DHT22.
-INTERVAL=10
-
-sensor_data = {'temperature': 0, 'humidity': 0}
-
-next_reading = time.time()
-
 # client = mqtt.Client()
 
 # Set access token
