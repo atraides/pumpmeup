@@ -7,23 +7,35 @@ import json
 import board
 import signal
 import logging
+import argparse
 import adafruit_dht
 import paho.mqtt.client as mqtt
 
 from yaml import safe_load
 from logging import config
 
+parser = argparse.ArgumentParser(description='Gets the reading from the connected DHT22 sensor and publish it to a MQTT topic.')
+parser.add_argument('--debug',action='store_true',help='print debug messages to stderr')
+args = parser.parse_args()
+
 logger = logging.getLogger('main')
+debugger = logging.getLogger()
+
 script_path = os.path.dirname(os.path.realpath(__file__))
 
+def debug_message(message):
+    global debugger
+    global args
+
+    if args.debug:
+        debugger.debug(message)
+
 def signal_terminate(sig, frame):
-    global logger
-    logger.info('We got a request to terminate! Quitting...')
+    debug_message('We got a request to terminate! Quitting...')
     sys.exit(0)
 
 def signal_restart(sig, frame):
-    global logger
-    logger.info('Restart of the thermometer was requested! Restarting...')
+    debug_message('Restart of the thermometer was requested! Restarting...')
     # sys.exit(0)
 
 signal.signal(signal.SIGTERM, signal_terminate)
@@ -55,7 +67,7 @@ while True:
         # Print the values to the serial port
         temperature = dhtDevice.temperature
         humidity = dhtDevice.humidity
-        logger.debug("Temp: {:.1f} °C - Humidity: {}% ".format(temperature, humidity))
+        debug_message("Temp: {:.1f} °C - Humidity: {}% ".format(temperature, humidity))
         sensor_data['temperature'] = temperature
         sensor_data['humidity'] = humidity
 
@@ -63,7 +75,7 @@ while True:
         # client.publish('v1/devices/millhouse/bedroom/humidity', sensor_data['humidity'], 1)
     except RuntimeError as error:
         # Errors happen fairly often, DHT's are hard to read, just keep going
-        logger.error(error.args[0])
+        logger.error('The following DHT error occured: {}'.format(error.args[0]))
         time.sleep(2.0)
         continue
     except Exception as error:
