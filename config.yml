@@ -41,3 +41,8 @@ logger:
             level: INFO
             handlers: [syslog]
             propagate: no
+
+thermostat:
+    pin: board.D4
+    type: 'DHT22'
+    interval: 60
