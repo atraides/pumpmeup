@@ -15,12 +15,6 @@ config.dictConfig(log_config)
 
 logger = logging.getLogger("main")
 
-logger.debug("Debug")
-logger.info("Info")
-logger.warn("Warn")
-logger.error("Error")
-logger.critical("Critical")
-
 # Initial the dht device, with data pin connected to:
 dhtDevice = adafruit_dht.DHT22(board.D4)
 
@@ -48,22 +42,17 @@ try:
     while True:
         try:
             # Print the values to the serial port
-            temperature_c = dhtDevice.temperature
-            temperature_f = temperature_c * (9 / 5) + 32
+            temperature = dhtDevice.temperature
             humidity = dhtDevice.humidity
-            print(
-                "Temp: {:.1f} F / {:.1f} C    Humidity: {}% ".format(
-                    temperature_f, temperature_c, humidity
-                )
-            )
-            sensor_data['temperature'] = temperature_c
+            logger.debug("Temp: {:.1f} °C - Humidity: {}% ".format(temperature, humidity))
+            sensor_data['temperature'] = temperature
             sensor_data['humidity'] = humidity
 
             # client.publish('v1/devices/millhouse/bedroom/temperature', sensor_data['temperature'], 1)
             # client.publish('v1/devices/millhouse/bedroom/humidity', sensor_data['humidity'], 1)
         except RuntimeError as error:
             # Errors happen fairly often, DHT's are hard to read, just keep going
-            print(error.args[0])
+            logger.error(error.args[0])
             time.sleep(2.0)
             continue
         except Exception as error:

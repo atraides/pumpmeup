@@ -33,3 +33,6 @@ sudo apt install -y libgpiod2
 ### Install the paho-mqtt library and pyyaml
 pip3 install paho-mqtt
 pip3 install pyyaml
+
+### Create the logfile and give it to our user
+sudo touch /var/log/pumpmeup.log && sudo chown root.dietpi /var/log/pumpmeup.log && sudo chmod 664 /var/log/pumpmeup.log
