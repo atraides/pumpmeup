@@ -19,16 +19,15 @@ parser.add_argument('--debug',action='store_true',help='print debug messages to 
 args = parser.parse_args()
 
 logger = logging.getLogger('main')
-debugger = logging.getLogger()
 
 script_path = os.path.dirname(os.path.realpath(__file__))
 
 def debug_message(message):
-    global debugger
+    global logger
     global args
 
     if args.debug:
-        debugger.debug(message)
+        logger.debug(message)
 
 def signal_terminate(sig, frame):
     debug_message('We got a request to terminate! Quitting...')
