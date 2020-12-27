@@ -13,6 +13,7 @@ from logging import config
 
 def signal_terminate(sig, frame):
     global logger
+    print('We got a request to terminate! Quitting...')
     logger.info('We got a request to terminate! Quitting...')
     sys.exit(0)
 
