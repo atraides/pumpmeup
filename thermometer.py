@@ -13,16 +13,19 @@ from logging import config
 
 def signal_terminate(sig, frame):
     global logger
-    print('We got a request to terminate! Quitting...')
     logger.info('We got a request to terminate! Quitting...')
     sys.exit(0)
 
+def signal_restart(sig, frame):
+    global logger
+    logger.info('Restart of the thermometer was requested! Restarting...')
+    sys.exit(0)
+
 signal.signal(signal.SIGTERM, signal_terminate)
+signal.signal(signal.SIGHUP, signal_restart)
 
 log_config = safe_load(open('config.yml'))
 config.dictConfig(log_config)
-
-logger = logging.getLogger("main")
 
 # Initial the dht device, with data pin connected to:
 dhtDevice = adafruit_dht.DHT22(board.D4)
