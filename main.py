@@ -12,16 +12,20 @@ import adafruit_dht
 import paho.mqtt.client as mqtt
 
 from yaml import safe_load
-from logging import config
+from logging import config as log_config
 
 parser = argparse.ArgumentParser(description='Gets the reading from the connected DHT22 sensor and publish it to a MQTT topic.')
 parser.add_argument('--debug',action='store_true',help='print debug messages to stderr')
 args = parser.parse_args()
 
-logger = logging.getLogger('main')
-root_logger = logging.getLogger()
-
 script_path = os.path.dirname(os.path.realpath(__file__))
+
+config = safe_load(open('{}/config.yml'.format(script_path)))
+if config.logger:
+    log_config.dictConfig(config.logger)
+    logger = logging.getLogger('main')
+
+root_logger = logging.getLogger()
 
 def debug_message(message):
     if args.debug:
@@ -41,8 +45,6 @@ signal.signal(signal.SIGTERM, signal_catcher)
 signal.signal(signal.SIGHUP, signal_catcher)
 signal.signal(signal.SIGINT, signal_catcher)
 
-log_config = safe_load(open('{}/config.yml'.format(script_path)))
-config.dictConfig(log_config)
 
 # Initial the dht device, with data pin connected to:
 dhtDevice = adafruit_dht.DHT22(board.D4)
