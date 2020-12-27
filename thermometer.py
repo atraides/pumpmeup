@@ -21,7 +21,7 @@ def signal_terminate(sig, frame):
 def signal_restart(sig, frame):
     global logger
     logger.info('Restart of the thermometer was requested! Restarting...')
-    sys.exit(0)
+    # sys.exit(0)
 
 signal.signal(signal.SIGTERM, signal_terminate)
 signal.signal(signal.SIGHUP, signal_restart)

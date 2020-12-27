@@ -25,10 +25,10 @@ handlers:
 root:
     level: DEBUG
     handlers: [syslog, rotating_file]
-    propogate: yes
+    propagate: yes
 
 loggers:
     main:
         level: DEBUG
         handlers: [syslog, rotating_file]
-        propogate: yes
+        propagate: yes
