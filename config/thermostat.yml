@@ -1,0 +1,7 @@
+pin: D4
+model: DHT22
+interval: 60
+location:
+    place: millhouse
+    floor: basement
+    room: study
