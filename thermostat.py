@@ -14,35 +14,6 @@ import paho.mqtt.client as mqtt
 from yaml import safe_load
 from logging import config as log_config
 
-parser = argparse.ArgumentParser(description='Gets the reading from the connected DHT22 sensor and publish it to a MQTT topic.')
-parser.add_argument('--debug',action='store_true',help='print debug messages to stderr')
-args = parser.parse_args()
-
-script_path = os.path.dirname(os.path.realpath(__file__))
-config = safe_load(open('{}/config.yml'.format(script_path)))
-
-if 'logger' in config:
-    log_config.dictConfig(config.get('logger'))
-    logger = logging.getLogger('main')
-
-root_logger = logging.getLogger()
-
-signal.signal(signal.SIGTERM, signal_catcher)
-signal.signal(signal.SIGHUP, signal_catcher)
-signal.signal(signal.SIGINT, signal_catcher)
-
-# THINGSBOARD_HOST = '10.42.0.195'
-# ACCESS_TOKEN = 'DHT22_DEMO_TOKEN'
-# client = mqtt.Client()
-
-# Set access token
-#client.username_pw_set(ACCESS_TOKEN)
-
-# Connect to ThingsBoard using default MQTT port and 60 seconds keepalive interval
-# client.connect(THINGSBOARD_HOST, 1883, 60)
-
-# client.loop_start()
-
 def debug_message(message):
     if args.debug:
         root_logger.debug(message)
@@ -86,6 +57,35 @@ def main():
             sleep_time = next_reading-time.time()
             if sleep_time > 0:
                 time.sleep(sleep_time)
+
+parser = argparse.ArgumentParser(description='Gets the reading from the connected DHT22 sensor and publish it to a MQTT topic.')
+parser.add_argument('--debug',action='store_true',help='print debug messages to stderr')
+args = parser.parse_args()
+
+script_path = os.path.dirname(os.path.realpath(__file__))
+config = safe_load(open('{}/config.yml'.format(script_path)))
+
+if 'logger' in config:
+    log_config.dictConfig(config.get('logger'))
+    logger = logging.getLogger('main')
+
+root_logger = logging.getLogger()
+
+signal.signal(signal.SIGTERM, signal_catcher)
+signal.signal(signal.SIGHUP, signal_catcher)
+signal.signal(signal.SIGINT, signal_catcher)
+
+# THINGSBOARD_HOST = '10.42.0.195'
+# ACCESS_TOKEN = 'DHT22_DEMO_TOKEN'
+# client = mqtt.Client()
+
+# Set access token
+#client.username_pw_set(ACCESS_TOKEN)
+
+# Connect to ThingsBoard using default MQTT port and 60 seconds keepalive interval
+# client.connect(THINGSBOARD_HOST, 1883, 60)
+
+# client.loop_start()
 
 if __name__ == '__main__':
     main()
