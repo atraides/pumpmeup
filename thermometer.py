@@ -3,12 +3,20 @@ import sys
 import time
 import json
 import board
+import signal
 import logging
 import adafruit_dht
 import paho.mqtt.client as mqtt
 
 from yaml import safe_load
 from logging import config
+
+def signal_terminate(sig, frame):
+    global logger
+    logger.info('We got a request to terminate! Quitting...')
+    sys.exit(0)
+
+signal.signal(signal.SIGTERM, signal_terminate)
 
 log_config = safe_load(open('config.yml'))
 config.dictConfig(log_config)
@@ -38,33 +46,30 @@ next_reading = time.time()
 
 # client.loop_start()
 
-try:
-    while True:
-        try:
-            # Print the values to the serial port
-            temperature = dhtDevice.temperature
-            humidity = dhtDevice.humidity
-            logger.debug("Temp: {:.1f} °C - Humidity: {}% ".format(temperature, humidity))
-            sensor_data['temperature'] = temperature
-            sensor_data['humidity'] = humidity
+while True:
+    try:
+        # Print the values to the serial port
+        temperature = dhtDevice.temperature
+        humidity = dhtDevice.humidity
+        logger.debug("Temp: {:.1f} °C - Humidity: {}% ".format(temperature, humidity))
+        sensor_data['temperature'] = temperature
+        sensor_data['humidity'] = humidity
 
-            # client.publish('v1/devices/millhouse/bedroom/temperature', sensor_data['temperature'], 1)
-            # client.publish('v1/devices/millhouse/bedroom/humidity', sensor_data['humidity'], 1)
-        except RuntimeError as error:
-            # Errors happen fairly often, DHT's are hard to read, just keep going
-            logger.error(error.args[0])
-            time.sleep(2.0)
-            continue
-        except Exception as error:
-            dhtDevice.exit()
-            raise error
+        # client.publish('v1/devices/millhouse/bedroom/temperature', sensor_data['temperature'], 1)
+        # client.publish('v1/devices/millhouse/bedroom/humidity', sensor_data['humidity'], 1)
+    except RuntimeError as error:
+        # Errors happen fairly often, DHT's are hard to read, just keep going
+        logger.error(error.args[0])
+        time.sleep(2.0)
+        continue
+    except Exception as error:
+        dhtDevice.exit()
+        raise error
 
-        next_reading += INTERVAL
-        sleep_time = next_reading-time.time()
-        if sleep_time > 0:
-            time.sleep(sleep_time)
-except KeyboardInterrupt:
-    pass
+    next_reading += INTERVAL
+    sleep_time = next_reading-time.time()
+    if sleep_time > 0:
+        time.sleep(sleep_time)
 
 # client.loop_stop()
 # client.disconnect()
