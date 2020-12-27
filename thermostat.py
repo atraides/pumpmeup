@@ -32,7 +32,7 @@ def main():
     # Initialize the thermostat
     if 'thermostat' in config:
         thermostat = config.get('thermostat')
-        thermostat_device = adafruit_dht.DHT22(thermostat.get('pin'))
+        thermostat_device = adafruit_dht.DHT22(board.D4)
         measure_interval = thermostat.get('interval')
         next_reading = time.time()
 
