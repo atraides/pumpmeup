@@ -1,3 +1,5 @@
+#!/home/dietpi/production/bin/python3
+
 import os
 import sys
 import time
