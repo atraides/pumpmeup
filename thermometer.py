@@ -8,9 +8,10 @@ import adafruit_dht
 import paho.mqtt.client as mqtt
 
 from yaml import safe_load
+from logging import config
 
-config = safe_load(open('config.yml'))
-logging.config.dictConfig(config)
+log_config = safe_load(open('config.yml'))
+config.dictConfig(log_config)
 
 logger = logging.getLogger("main")
 

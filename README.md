@@ -30,5 +30,6 @@ pip3 install adafruit-circuitpython-dht
 ### Install the libgpiod2
 sudo apt install -y libgpiod2
 
-### Install the paho-mqtt library
+### Install the paho-mqtt library and pyyaml
 pip3 install paho-mqtt
+pip3 install pyyaml
