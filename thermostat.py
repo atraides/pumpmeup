@@ -43,13 +43,18 @@ def main():
         measure_interval = thermostat.get('interval')
         next_reading = time.time()
 
+        mqtt_connected = False
         mqtt_client = mqtt.Client(MQTT_CLIENT_ID)
         mqtt_client.reconnect_delay_set(min_delay=1, max_delay=120)
 
-        try:
-            mqtt_client.connect(MQTT_ADDRESS, 1883, 60)
-        except OSError as error:
-            print(error)
+        while not mqtt_connected:
+            try:
+                mqtt_client.connect(MQTT_ADDRESS, 1883, 60)
+                mqtt_connected = True
+            except OSError as error:
+                if error.errno == 113: # No route to host
+                    logger.error('Can\'t connect to the MQTT broker (No route to host), retrying in 120 seconds.')
+                    time.sleep(120)
 
         mqtt_client.loop_start()
 
