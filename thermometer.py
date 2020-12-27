@@ -14,6 +14,8 @@ from yaml import safe_load
 from logging import config
 
 logger = logging.getLogger('main')
+script_path = os.path.dirname(os.path.realpath(__file__))
+print(script_path)
 
 def signal_terminate(sig, frame):
     global logger
@@ -28,7 +30,7 @@ def signal_restart(sig, frame):
 signal.signal(signal.SIGTERM, signal_terminate)
 signal.signal(signal.SIGHUP, signal_restart)
 
-log_config = safe_load(open('config.yml'))
+log_config = safe_load(open('{}/config.yml'.format(script_path)))
 config.dictConfig(log_config)
 
 # Initial the dht device, with data pin connected to:
