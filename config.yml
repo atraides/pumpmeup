@@ -8,7 +8,7 @@ formatters:
 handlers:
     syslog:
         class: logging.handlers.SysLogHandler
-        level: DEBUG
+        level: INFO
         formatter: default
         address: /dev/log
         facility: local0
