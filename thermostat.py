@@ -43,7 +43,11 @@ def main():
         measure_interval = thermostat.get('interval')
         next_reading = time.time()
 
-        mqtt_client = mqtt.Client(MQTT_CLIENT_ID)
+        try:
+            mqtt_client = mqtt.Client(MQTT_CLIENT_ID)
+        except OSError as error:
+            print(error)
+
         mqtt_client.reconnect_delay_set(min_delay=1, max_delay=120)
         mqtt_client.connect(MQTT_ADDRESS, 1883, 60)
 
