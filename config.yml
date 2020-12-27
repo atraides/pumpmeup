@@ -31,4 +31,4 @@ loggers:
     main:
         level: DEBUG
         handlers: [syslog, rotating_file]
-        propagate: yes
+        propagate: no
