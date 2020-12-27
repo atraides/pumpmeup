@@ -21,8 +21,8 @@ args = parser.parse_args()
 script_path = os.path.dirname(os.path.realpath(__file__))
 
 config = safe_load(open('{}/config.yml'.format(script_path)))
-if config.logger:
-    log_config.dictConfig(config.logger)
+if 'logger' in config:
+    log_config.dictConfig(config.get('logger'))
     logger = logging.getLogger('main')
 
 root_logger = logging.getLogger()
