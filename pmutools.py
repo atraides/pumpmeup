@@ -20,24 +20,14 @@ def getConfig(name):
         return safe_load(__configExists(name).open())        
     return None
 
-def thermostatConfigured():
-    if __configExists('thermostat'):
-        return True
-    return False
-
-def mqttConfigured():
-    if __configExists('mqtt'):
-        return True
-    return False
-
-def loggingConfigured():
-    if __configExists('logging'):
+def isConfigured(device):
+    if __configExists(device):
         return True
     return False
 
 def getLogger(debug):
     global logger
-    if loggingConfigured():
+    if isConfigured('logging'):
         log_config.dictConfig(getConfig('logging'))
         if debug and 'debug' in logging.root.manager.loggerDict:
             logger = logging.getLogger('debug')
@@ -48,10 +38,6 @@ def getLogger(debug):
         return logger
     else:
         return None
-
-def mqttClientName(mqtt_config,thermostat):
-    if mqtt_config and thermostat:
-        return '{}-{}-{}'.format(mqtt_config.get('client_prefix'),thermostat.getFloor(),thermostat.getRoom())
 
 def signal_catcher(signalNumber, frame):
     if signalNumber == signal.SIGTERM: # SIGTERM

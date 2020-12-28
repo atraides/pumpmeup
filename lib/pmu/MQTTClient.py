@@ -3,7 +3,6 @@ import time
 import logging
 import paho.mqtt.client as mqtt
 
-from pprint import pprint
 from logging import getLogger
 from collections import namedtuple
 
@@ -15,16 +14,16 @@ class MQTTClient(mqtt.Client):
         super(MQTTClient, self).__init__(**kwargs)
 
         self.config = namedtuple('MQTTConfig', config.keys())(**config)
-        # self.last_pub_time=time.time()
-        # self.topic_ack=[]
-        # self.run_flag=True
-        # self.subscribe_flag=False
+        self.last_pub_time=time.time()
+        self.topic_ack=[]
+        self.run_flag=True
+        self.subscribe_flag=False
         self.bad_connection_flag=False
         self.connected_flag=False
         self.disconnect_flag=False
-        # self.disconnect_time=0.0
-        # self.pub_msg_count=0
-        # self.devices=[]
+        self.disconnect_time=0.0
+        self.pub_msg_count=0
+        self.devices=[]
         if 'logger' in config:
             self.logger=config.get('logger')
         else:
@@ -54,14 +53,6 @@ class MQTTClient(mqtt.Client):
     def shutdown(self):
         self.loop_stop
         self.disconnect()
-
-    # def subscribeTopic(self,topic):
-    #     if self.connected_flag and topic:
-    #         self.logger.info('Subscribing to {}'.format(topic))
-    #     return self
-
-    # # def config(self):
-    #     # def broker():
 
     def get_connection_options(self):
         options = []
