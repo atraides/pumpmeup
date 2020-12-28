@@ -1,0 +1,14 @@
+mqtt:
+  client_name: PMUInfluxBridge
+  broker: 10.42.0.195
+  port: 1883
+  topic: 
+    - ['v1/+/+/+/temperature',2]
+    - ['v1/+/+/+/humidity',2]
+  regex: '^v1/(?P<place>[^/]+)/(?P<floor>[^/]+)/(?P<room>[^/]+)/(?P<measurement>[^/]+)$'
+influxdb:
+  address: 10.42.0.195
+  user: mqtt
+  password: mqtt
+  database: thermo
+

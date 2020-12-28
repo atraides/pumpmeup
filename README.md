@@ -36,3 +36,6 @@ pip3 install pyyaml
 
 ### Create the logfile and give it to our user
 sudo touch /var/log/pumpmeup.log && sudo chown dietpi.gpio /var/log/pumpmeup.log && sudo chmod 664 /var/log/pumpmeup.log
+
+### Add user to the gpio group
+adduser dietpi gpio

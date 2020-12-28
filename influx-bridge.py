@@ -1,52 +1,34 @@
-import re
-from typing import NamedTuple
+#!/home/dietpi/production/bin/python3
 
-import paho.mqtt.client as mqtt
+import os
+import re
+import sys
+import time
+
+from pprint import pprint
+from typing import NamedTuple
 from influxdb import InfluxDBClient
 
-PUMP_STATE = False
-
-INFLUXDB_ADDRESS = '10.42.0.195'
-INFLUXDB_USER = 'mqtt'
-INFLUXDB_PASSWORD = 'mqtt'
-INFLUXDB_DATABASE = 'thermo'
-
-MQTT_ADDRESS = '10.42.0.195'
-MQTT_USER = 'cdavid'
-MQTT_PASSWORD = 'cdavid'
-MQTT_TOPIC = [('v1/devices/millhouse/+/temperature',1),('v1/devices/millhouse/+/humidity',1)]
-MQTT_REGEX = '^v1/devices/millhouse/([^/]+)/([^/]+)$'
-MQTT_CLIENT_ID = 'MQTTInfluxDBBridge'
-
-influxdb_client = InfluxDBClient(INFLUXDB_ADDRESS, 8086, INFLUXDB_USER, INFLUXDB_PASSWORD, None)
-mqtt_client = mqtt.Client(MQTT_CLIENT_ID)
+import pmutools
+from pmutools import *
+from pmu.MQTTClient import MQTTClient
 
 class SensorData(NamedTuple):
     location: str
     measurement: str
     value: float
 
-def on_connect(client, userdata, flags, rc):
-    """ The callback for when the client receives a CONNACK response from the server."""
-    print('Connected with result code ' + str(rc))
-    client.subscribe(MQTT_TOPIC)
+def _init_influxdb_database():
+    databases = influxdb_client.get_list_database()
+    database = influx_config.get('database')
+    if len(list(filter(lambda x: x['name'] == database, databases))) == 0:
+        influxdb_client.create_database(database)
+    influxdb_client.switch_database(database)
 
-def _parse_mqtt_message(msg):
-    global PUMP_STATE
-    topic = msg.topic
-    payload = msg.payload.decode('utf-8')
-    retain = msg.retain
-    match = re.match(MQTT_REGEX, topic)
-    if match:
-        location = match.group(1)
-        measurement = match.group(2)
-        if measurement in ('status','pumpcontroll'):
-            if retain and measurement == 'pumpcontroll':
-                PUMP_STATE = payload
-            return None
-        return SensorData(location, measurement, float(payload))
-    else:
-        return None
+def gracefulExit():
+    if callable(mqtt_client.shutdown):
+        mqtt_client.shutdown()
+    sys.exit(0)
 
 def _send_sensor_data_to_influxdb(sensor_data):
     json_body = [
@@ -62,41 +44,50 @@ def _send_sensor_data_to_influxdb(sensor_data):
     ]
     influxdb_client.write_points(json_body)
 
-def on_message(client, userdata, msg):
-    """The callback for when a PUBLISH message is received from the server."""
-    print(msg.topic + ' ' + str(msg.payload))
-    sensor_data = _parse_mqtt_message(msg)
-    if sensor_data is not None:
-        _send_sensor_data_to_influxdb(sensor_data)
-        if sensor_data.measurement == 'temperature':
-            if sensor_data.value >= 20:
-                set_pump(sensor_data.location,False)
-            else:
-                set_pump(sensor_data.location,True)
+def _parse_mqtt_message(client, userdata, msg):
+    if hasattr(msg,'topic') and hasattr(msg,'payload'):
+        match = re.match(mqtt_config.get('regex'), msg.topic)
+        if match:
+            matched = match.groupdict()
+            if all (key in matched for key in ('floor','room','measurement')):
+                location = matched.get('room')
+                measurement = matched.get('measurement')
+                if measurement in ('status'):
+                    return None
+                _send_sensor_data_to_influxdb(
+                    SensorData(location,measurement,float(msg.payload.decode('utf-8')))
+                )
 
-def _init_influxdb_database():
-    databases = influxdb_client.get_list_database()
-    if len(list(filter(lambda x: x['name'] == INFLUXDB_DATABASE, databases))) == 0:
-        influxdb_client.create_database(INFLUXDB_DATABASE)
-    influxdb_client.switch_database(INFLUXDB_DATABASE)
+parser = argparse.ArgumentParser(description='Gets the reading from the connected DHT11/22 sensor and publish it to an MQTT topic.')
+parser.add_argument('--debug',action='store_true',help='print debug messages to stderr')
+arguments = parser.parse_args()
 
-def set_pump(location,state):
-    mqtt_client.publish('v1/devices/millhouse/{}/pumpcontroll/state'.format(location), payload=state, qos=1, retain=True)
+logger = getLogger(arguments.debug)
+config = getConfig('influx-bridge')
 
 def main():
-    _init_influxdb_database()
-
-    #mqtt_client.username_pw_set(MQTT_USER, MQTT_PASSWORD)
-    mqtt_client.on_connect = on_connect
-    mqtt_client.on_message = on_message
-
-    mqtt_client.connect(MQTT_ADDRESS, 1883)
-    try:
-        mqtt_client.loop_forever()
-    except KeyboardInterrupt:
-        mqtt_client.loop_stop()
-        mqtt_client.disconnect()
+    global influx_config
+    global influxdb_client
+    global mqtt_config
+    global mqtt_client
+    pmutools.gracefulExit = gracefulExit
+    if all (key in config for key in ('mqtt','influxdb')):
+        logger.debug('We have all the necessary keys in the config.')
+        influx_config = config.get('influxdb')
+        mqtt_config = config.get('mqtt')
+        if all (key in influx_config for key in ('address','user','password','database')):
+            logger.debug('We have all necessary influxdb config keys.')
+            influxdb_client = InfluxDBClient(influx_config.get('address'),8086,influx_config.get('user'),influx_config.get('password'),None)
+            _init_influxdb_database()
+        else:
+            logger.error('Some crucial influxdb configuration is missing. Pleae check the configuration file.')
+            gracefulExit()
+            
+        if all (key in mqtt_config for key in ('broker','topic','regex')):
+            mqtt_client = MQTTClient({**mqtt_config,'logger':logger})
+            mqtt_client.safe_connect()
+            mqtt_client.on_message = _parse_mqtt_message
+            mqtt_client.loop_forever()
 
 if __name__ == '__main__':
-    print('MQTT to InfluxDB bridge')
     main()
