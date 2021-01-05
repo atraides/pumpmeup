@@ -1,9 +1,7 @@
 #!/home/dietpi/production/bin/python3
 
-import os
 import re
 import sys
-import time
 
 import pmutools
 from pmutools import *

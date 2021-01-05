@@ -3,8 +3,6 @@ import board
 import logging
 import adafruit_dht
 
-from logging import getLogger
-
 class PMUThermostat:
     def __init__(self,config):
         if 'model' in config:
@@ -28,7 +26,7 @@ class PMUThermostat:
             handler.setLevel(logging.DEBUG)
             formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
             handler.setFormatter(formatter)
-            self.logger=getLogger()
+            self.logger=logging.getLogger()
             self.logger.setLevel(logging.DEBUG)
             self.logger.addHandler(handler)
 
@@ -71,7 +69,6 @@ class PMUThermostat:
                     # Errors happen fairly often, DHT's are hard to read, just keep going
                     self.logger.warning('An error occured reading the DHT sensor: {}'.format(error.args[0]))
                     time.sleep(2)
-                    pass
                 except Exception as error:
                     self.thermostat.exit()
                     raise error
