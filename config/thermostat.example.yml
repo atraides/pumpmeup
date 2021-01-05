@@ -2,9 +2,9 @@ pin: D4
 model: DHT22
 interval: 60
 location:
-    place: millhouse
+    place: newyork
     floor: basement
     room: study
 mqtt:
   client_prefix: PMUThermostat
-  broker: 10.42.0.195
+  broker: 127.0.0.1
