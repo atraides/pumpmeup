@@ -6,8 +6,6 @@ import sys
 import time
 import requests
 
-from pprint import pprint
-
 from typing import NamedTuple
 from influxdb import InfluxDBClient
 
