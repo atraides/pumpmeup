@@ -3,8 +3,7 @@ Pump management for houses
 
 ## Additional steps on Raspberry Pi ( dietpi )
 ```
-sudo apt update
-sudo apt upgrade -y
+sudo apt update && sudo apt upgrade -y
 ```
 ### Install python3 with git and make it the default python interpreter
 ```
