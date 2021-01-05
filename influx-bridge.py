@@ -4,6 +4,9 @@ import os
 import re
 import sys
 import time
+import requests
+
+from pprint import pprint
 
 from typing import NamedTuple
 from influxdb import InfluxDBClient
@@ -18,7 +21,16 @@ class SensorData(NamedTuple):
     value: float
 
 def _init_influxdb_database():
-    databases = influxdb_client.get_list_database()
+    databases = None
+    logger.debug('Initialization of the InfluxDB interface.')
+    while not databases:
+        try:
+            databases = influxdb_client.get_list_database()
+            pass
+        except requests.exceptions.ConnectionError as errc:
+            logger.error('Error Connecting: {error}'.format(error=errc))
+            logger.warning('Connection to InfluxDB failed. Reconnect in {retry} seconds.'.format(retry=60))
+            time.sleep(60)
     database = influx_config.get('database')
     if len(list(filter(lambda x: x['name'] == database, databases))) == 0:
         influxdb_client.create_database(database)
@@ -53,16 +65,17 @@ def _parse_mqtt_message(client, userdata, msg):
                 measurement = matched.get('measurement')
                 if measurement in ('status'):
                     return None
-                _send_sensor_data_to_influxdb(
-                    SensorData(location,measurement,float(msg.payload.decode('utf-8')))
-                )
-
-parser = argparse.ArgumentParser(description='Gets the reading from the connected DHT11/22 sensor and publish it to an MQTT topic.')
-parser.add_argument('--debug',action='store_true',help='print debug messages to stderr')
-arguments = parser.parse_args()
-
-logger = getLogger(arguments.debug)
-config = getConfig('influx-bridge')
+                else:
+                    _send_sensor_data_to_influxdb(
+                        SensorData(
+                            location,
+                            measurement,
+                            float(msg.payload.decode('utf-8'))))
+                    logger.debug(
+                        '{measurement} reading received from {location}: {value}'.format(
+                            location=location.capitalize(),
+                            measurement=measurement.capitalize(),
+                            value=float(msg.payload.decode('utf-8'))))
 
 def main():
     global influx_config
@@ -87,6 +100,13 @@ def main():
             mqtt_client.safe_connect()
             mqtt_client.on_message = _parse_mqtt_message
             mqtt_client.loop_forever()
+
+parser = argparse.ArgumentParser(description='Gets the reading from the connected DHT11/22 sensor and publish it to an MQTT topic.')
+parser.add_argument('--debug',action='store_true',help='print debug messages to stderr')
+arguments = parser.parse_args()
+
+logger = getLogger(arguments.debug)
+config = getConfig('influx-bridge')
 
 if __name__ == '__main__':
     main()
