@@ -3,6 +3,7 @@ import board
 import logging
 import adafruit_dht
 
+from logging import getLogger
 
 class PMUThermostat:
     def __init__(self,config):

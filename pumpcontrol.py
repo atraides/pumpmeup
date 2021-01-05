@@ -9,8 +9,15 @@ from pmu.pump import PMUPump
 from pprint import pprint
 
 def gracefulExit():
+    global logger
     if callable(mqtt_client.shutdown):
         mqtt_client.shutdown()
+
+    for pump in pumps:
+        pump = pumps.get(pump)
+        if callable(pump.turnOff):
+            logger.info('Turning off the {pump} pump.'.format(pump=pump.floor))
+            pump.turnOff()
     sys.exit(0)
 
 def _parse_mqtt_message(client, userdata, msg):
@@ -18,32 +25,31 @@ def _parse_mqtt_message(client, userdata, msg):
         match = re.match(mqtt_config.get('regex'), msg.topic)
         if match:
             matched = match.groupdict()
-            if all (key in matched for key in ('floor','room','measurement')):
-                location = matched.get('room')
-                measurement = matched.get('measurement')
-                if measurement in ('status'):
-                    return None
-                else:
-                    logger.debug(
-                        '{measurement} reading received from {location}: {value}'.format(
-                            location=location.capitalize(),
-                            measurement=measurement.capitalize(),
-                            value=float(msg.payload.decode('utf-8'))))
+            if 'floor' in matched:
+                floor = matched.get('floor')
+                state = msg.payload.decode('utf-8')
+                logger.debug('State change requested to turn {state} the {floor} pump.'.format(floor=floor,state=state))
+                if floor in pumps:
+                    pump = pumps.get(floor)
+                    pump.changeState(state)
 
 def main():
     global pump_config
     global mqtt_config
     global mqtt_client
+    global pumps
 
-    pmutools.gracefulExit = gracefulExit
+    pumps = {}
 
     if all (key in config for key in ('mqtt','pumps')):
         logger.debug('We have all the necessary keys in the config.')
-        pump_config = config.get('pumps')
+        pumps_config = config.get('pumps')
         mqtt_config = config.get('mqtt')
 
-        for pump in pump_config:
-            logger.debug(pump)
+        for floor in pumps_config:
+            pump_config = pumps_config.get(floor)
+            pump = PMUPump({**pump_config,'logger':logger,'floor':floor})
+            pumps[floor] = pump
             
         if all (key in mqtt_config for key in ('broker','topic','regex')):
             mqtt_client = MQTTClient({**mqtt_config,'logger':logger})
@@ -58,40 +64,7 @@ arguments = parser.parse_args()
 logger = getLogger(arguments.debug)
 config = getConfig('pumpcontrol')
 
-# import board
-# import digitalio
-# import paho.mqtt.client as mqtt
-
-# MQTT_TOPIC = 'v1/devices/millhouse/+/pumpcontroll/state'
-# MQTT_REGEX = 'v1/devices/millhouse/([^/]+)/pumpcontroll/state'
-
-# basement = digitalio.DigitalInOut(board.D23)
-# groundfloor = digitalio.DigitalInOut(board.D24)
-
-# def initIO(io):
-#     io.direction = digitalio.Direction.OUTPUT
-#     io.value = False
-#     time.sleep(0.5)
-#     io.value = True
-
-# def str2bool(v):
-#   return v.lower() in ("yes", "true", "t", "1")
-
-# def main():
-#     initIO(basement)
-#     initIO(groundfloor)
-
-#     mqtt_client = mqtt.Client(MQTT_CLIENT_ID)
-#     #mqtt_client.username_pw_set(MQTT_USER, MQTT_PASSWORD)
-#     mqtt_client.on_connect = on_connect
-#     mqtt_client.on_message = on_message
-
-#     mqtt_client.connect(MQTT_ADDRESS, 1883)
-#     try:
-#         mqtt_client.loop_forever()
-#     except KeyboardInterrupt:
-#         mqtt_client.loop_stop()
-#         mqtt_client.disconnect()
+pmutools.gracefulExit = gracefulExit
 
 if __name__ == '__main__':
     main()
