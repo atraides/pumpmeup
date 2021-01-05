@@ -52,6 +52,7 @@ def main():
                     if temperature and humidity:
                         mqtt_client.publish('{prefix}/temperature'.format(prefix=topic_prefix), temperature, 1)
                         mqtt_client.publish('{prefix}/humidity'.format(prefix=topic_prefix), humidity, 1)
+                        logger.debug('Reading from the sensor. Temperature: {temp}, Himidity: {humidity}'.format(temp=temperature,humidity=humidity))
                     thermostat.waitForNextRead()
                 gracefulExit()
     else:
