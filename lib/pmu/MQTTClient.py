@@ -70,7 +70,7 @@ class MQTTClient(mqtt.Client):
         if hasattr(self.config,'broker'):
             while True:
                 try:
-                    self.logger.info('Connecting to {broker}.'.format(broker=self.config.broker))
+                    self.logger.info(f'Connecting to {self.config.broker}.')
                     self.connect(*self.get_connection_options())
                     break
                 except OSError as error:
