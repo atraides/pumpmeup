@@ -17,17 +17,18 @@ hvac:
             provide:
                 - status
             consume:
-                - temperature
+                - control
+            interval: 120
         -
             pin: D24
             type: circulation-pump
-            
             subtype: relay
             floor: ground
             provide:
                 - status
             consume:
-                - temperature
+                - control
+            interval: 120
 connection:
     mqtt:
         broker: 10.42.0.218

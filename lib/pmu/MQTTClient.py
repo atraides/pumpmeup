@@ -38,7 +38,7 @@ class MQTTClient(mqtt.Client):
         while not self.connected_flag:
             if rc==0:
                 self.connected_flag=True #set flag
-                self.logger.info("MQTT connection succesful.")
+                self.logger.info("MQTT connection successful.")
                 if hasattr(self.config,'topic'):
                     self.logger.info('Subscribing to topic: {topic}'.format(topic=self.config.topic))
                     self.subscribe(self.config.topic)
@@ -50,8 +50,9 @@ class MQTTClient(mqtt.Client):
         self.logger.info('New message in \'{topic}\' with payload {payload}'.format(topic=msg.topic,payload=str(msg.payload)))
 
     def shutdown(self):
-        self.logger.info('Disconnecting from the broker.')
+        self.logger.debug('Stopping the loop.')
         self.loop_stop
+        self.logger.debug('Disconnecting from the broker.')
         self.disconnect()
 
     def get_connection_options(self):

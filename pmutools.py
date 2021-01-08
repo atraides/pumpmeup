@@ -11,6 +11,7 @@ from typing import NamedTuple
 from pprint import pprint
 
 from lib.pmu.PMUSensor import PMUSensor
+from lib.pmu.PMUController import PMUController
 from lib.pmu.PMUConnection import PMUConnection
 
 class PMUManager():
@@ -84,9 +85,10 @@ class PMUManager():
 
     def stop_sensors(self):
         self.log.debug(f'Stopping all sensors.')
-        for thread in self.threads:
-            self.exit_thread.set()
-            thread.join()
+        if hasattr(self,'threads'):
+            for thread in self.threads:
+                self.exit_thread.set()
+                thread.join()
         self.log.debug(f'All sensors stopped.')
 
     def load_connection(self):
@@ -96,6 +98,39 @@ class PMUManager():
                 'log': self.log
             })
         return None
+
+    def load_controllers(self):
+        ''' Add more validation to the load sequence. '''
+        self._controllers=[]
+        for capability in self.config:
+            capability_data = self.config.get(capability)
+            if 'controllers' in capability_data:
+                for controller in capability_data.get('controllers'):
+                    controller = PMUController({
+                        **controller,
+                        'log':self.log,
+                        'location': self.location,
+                        'connection': self.connection,
+                        'capability': capability
+                    })
+                    self._controllers.append(controller)
+
+    def start_controllers(self):
+        self._controller_threads = []
+        self._controller_exit = threading.Event()
+        for controller in self.controllers:
+            thread = threading.Thread(target=controller.start_controller, args=(self._controller_exit,))
+            thread.name = f'PMUController-{controller.floor}'
+            thread.start()
+            self._controller_threads.append(thread)
+
+    def stop_controllers(self):
+        self.log.debug(f'Stopping all controllers.')
+        if hasattr(self,'_controller_threads'):
+            for thread in self._controller_threads:
+                self._controller_exit.set()
+                thread.join()
+        self.log.debug(f'All controllers stopped.')
 
     def signal_catcher(self, signalNumber, frame):
         if signalNumber == signal.SIGTERM: # SIGTERM
@@ -109,13 +144,20 @@ class PMUManager():
 
     def graceful_exit(self):
         self.stop_sensors()
+        self.stop_controllers()
 
     @property
     def sensors(self):
         if not hasattr(self,'_sensors'):
             self.load_sensors()
         return self._sensors
-   
+
+    @property
+    def controllers(self):
+        if not hasattr(self,'_controllers'):
+            self.load_controllers()
+        return self._controllers
+
     @property
     def connection(self):
         if not hasattr(self,'_connection'):
