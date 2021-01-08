@@ -32,12 +32,12 @@ def _parse_mqtt_message(client, userdata, msg):
                             measurement=measurement.capitalize(),
                             value=payload))
                     topic_prefix = 'v1/{}/{}'.format(matched.get('place'),matched.get('floor'))
-                    if payload >= 22:
+                    if payload >= 25:
                         mqtt_client.publish('{prefix}/pumpcontrol/state'.format(prefix=topic_prefix), payload='off', qos=1, retain=True)
                         logger.debug('Publishing to {topic} with payload {payload}'.format(topic='{prefix}/pumpcontrol/state'.format(prefix=topic_prefix),payload='off'))
-                    elif payload <= 20:
+                    elif payload <= 22:
                         mqtt_client.publish('{prefix}/pumpcontrol/state'.format(prefix=topic_prefix), payload='on', qos=1, retain=True)
-                        logger.debug('Publishing to {topic} with payload {payload}'.format(topic='{prefix}/pumpcontrol/state'.format(prefix=topic_prefix),payload='off'))
+                        logger.debug('Publishing to {topic} with payload {payload}'.format(topic='{prefix}/pumpcontrol/state'.format(prefix=topic_prefix),payload='on'))
 
 def main():
     global mqtt_config
