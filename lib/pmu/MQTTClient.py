@@ -50,6 +50,7 @@ class MQTTClient(mqtt.Client):
         self.logger.info('New message in \'{topic}\' with payload {payload}'.format(topic=msg.topic,payload=str(msg.payload)))
 
     def shutdown(self):
+        self.logger.info('Disconnecting from the broker.')
         self.loop_stop
         self.disconnect()
 
@@ -59,7 +60,7 @@ class MQTTClient(mqtt.Client):
             options.append(self.config.broker)
         if hasattr(self.config,'port'): 
             options.append(self.config.port)
-        if hasattr(self.config,'keepalive'): o
+        if hasattr(self.config,'keepalive'):
             options.append(self.config.keepalive)
         
         self.logger.info('We have the following connection options: [{}].'.format(', '.join(map(str,options))))

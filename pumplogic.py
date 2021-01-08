@@ -2,6 +2,7 @@
 
 import re
 import sys
+import argparse
 
 import pmutools
 from pmutools import *
@@ -25,8 +26,8 @@ def _parse_mqtt_message(client, userdata, msg):
                 else:
                     payload = float(msg.payload.decode('utf-8'))
                     logger.debug(
-                        '{measurement} reading received from {location}: {value}'.format(
-                            location=location.capitalize(),
+                        '{measurement} reading received in {topic}: {value}'.format(
+                            topic=msg.topic,
                             measurement=measurement.capitalize(),
                             value=payload))
                     topic_prefix = 'v1/{}/{}'.format(matched.get('place'),matched.get('floor'))
