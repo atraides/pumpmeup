@@ -54,7 +54,6 @@ def main():
                     mqtt_client.publish('{prefix}/humidity'.format(prefix=topic_prefix), humidity, 1)
                     logger.debug('Reading from the sensor. Temperature: {temp}, Himidity: {humidity}'.format(temp=temperature,humidity=humidity))
                 thermostat.waitForNextRead()
-            gracefulExit()
             
 parser = argparse.ArgumentParser(description='Gets the reading from the connected DHT11/22 sensor and publish it to an MQTT topic.')
 parser.add_argument('--debug',action='store_true',help='print debug messages to stderr')

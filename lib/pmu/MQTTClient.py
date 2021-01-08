@@ -55,9 +55,13 @@ class MQTTClient(mqtt.Client):
 
     def get_connection_options(self):
         options = []
-        if hasattr(self.config,'broker'): options.append(self.config.broker)
-        if hasattr(self.config,'port'): options.append(self.config.port)
-        if hasattr(self.config,'keepalive'): options.append(self.config.keepalive)
+        if hasattr(self.config,'broker'): 
+            options.append(self.config.broker)
+        if hasattr(self.config,'port'): 
+            options.append(self.config.port)
+        if hasattr(self.config,'keepalive'): o
+            options.append(self.config.keepalive)
+        
         self.logger.info('We have the following connection options: [{}].'.format(', '.join(map(str,options))))
         return options
 
