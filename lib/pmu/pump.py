@@ -4,10 +4,6 @@ import board
 import logging
 import digitalio
 
-from logging import getLogger
-
-from pprint import pprint
-
 class PMUPump:
     def __init__(self,config):
         if 'floor' in config:
@@ -23,7 +19,7 @@ class PMUPump:
             handler.setLevel(logging.DEBUG)
             formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
             handler.setFormatter(formatter)
-            self.logger=getLogger()
+            self.logger=logging.getLogger()
             self.logger.setLevel(logging.DEBUG)
             self.logger.addHandler(handler)
 

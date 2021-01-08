@@ -1,10 +1,7 @@
 import os
 import sys
 import signal
-import argparse
-
-import logging
-from logging import config as log_config
+import logging.config
 
 from yaml import safe_load
 from pathlib import Path
@@ -28,7 +25,7 @@ def isConfigured(device):
 def getLogger(debug):
     global logger
     if isConfigured('logging'):
-        log_config.dictConfig(getConfig('logging'))
+        logging.config.dictConfig(getConfig('logging'))
         if debug and 'debug' in logging.root.manager.loggerDict:
             logger = logging.getLogger('debug')
         elif 'main' in logging.root.manager.loggerDict:

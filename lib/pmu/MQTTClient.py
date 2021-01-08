@@ -3,7 +3,6 @@ import time
 import logging
 import paho.mqtt.client as mqtt
 
-from logging import getLogger
 from collections import namedtuple
 
 class MQTTClient(mqtt.Client):
@@ -31,7 +30,7 @@ class MQTTClient(mqtt.Client):
             handler.setLevel(logging.DEBUG)
             formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
             handler.setFormatter(formatter)
-            self.logger=getLogger()
+            self.logger=logging.getLogger()
             self.logger.setLevel(logging.DEBUG)
             self.logger.addHandler(handler)
 
@@ -56,9 +55,13 @@ class MQTTClient(mqtt.Client):
 
     def get_connection_options(self):
         options = []
-        if hasattr(self.config,'broker'): options.append(self.config.broker)
-        if hasattr(self.config,'port'): options.append(self.config.port)
-        if hasattr(self.config,'keepalive'): options.append(self.config.keepalive)
+        if hasattr(self.config,'broker'): 
+            options.append(self.config.broker)
+        if hasattr(self.config,'port'): 
+            options.append(self.config.port)
+        if hasattr(self.config,'keepalive'): o
+            options.append(self.config.keepalive)
+        
         self.logger.info('We have the following connection options: [{}].'.format(', '.join(map(str,options))))
         return options
 
@@ -72,7 +75,6 @@ class MQTTClient(mqtt.Client):
                 except OSError as error:
                     if error.errno == 113: # No route to host
                         self.logger.warning('Can\'t connect to the MQTT broker (No route to host).')
-                    pass
                 self.logger.warning('MQTT connection failed. Retrying in {retry} seconds.'.format(retry=retry))
                 time.sleep(retry)
             

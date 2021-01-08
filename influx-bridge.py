@@ -1,9 +1,9 @@
 #!/home/dietpi/production/bin/python3
 
-import os
 import re
 import sys
 import time
+import argparse
 import requests
 
 from typing import NamedTuple
@@ -24,7 +24,6 @@ def _init_influxdb_database():
     while not databases:
         try:
             databases = influxdb_client.get_list_database()
-            pass
         except requests.exceptions.ConnectionError as errc:
             logger.error('Error Connecting: {error}'.format(error=errc))
             logger.warning('Connection to InfluxDB failed. Reconnect in {retry} seconds.'.format(retry=60))

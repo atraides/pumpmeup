@@ -1,12 +1,10 @@
 import re
-import time
 
 import pmutools
 from pmutools import *
 from pmu.MQTTClient import MQTTClient
 from pmu.pump import PMUPump
 
-from pprint import pprint
 
 def gracefulExit():
     global logger
