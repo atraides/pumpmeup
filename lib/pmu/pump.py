@@ -1,65 +1,97 @@
-import sys
+import re
 import time
 import board
-import logging
 import digitalio
+import pmu.controller
 
 class PMUPump:
-    def __init__(self,config):
-        if 'floor' in config:
-            self.floor = config.get('floor')
-        if 'pin' in config:
-            pin = config.get('pin')
-            if pin in dir(board):
-                 self.pin = getattr(board,pin)
-        if 'logger' in config:
-            self.logger=config.get('logger')
-        else:
-            handler = logging.StreamHandler(sys.stdout)
-            handler.setLevel(logging.DEBUG)
-            formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-            handler.setFormatter(formatter)
-            self.logger=logging.getLogger()
-            self.logger.setLevel(logging.DEBUG)
-            self.logger.addHandler(handler)
+    def __init__(self,controller):
+        if isinstance(controller,pmu.controller.PMUController):
+            self.controller = controller
+            if hasattr(self.controller,'provide'):
+                self._provider_topic = f'{self.location}/{self.capability}/controllers/{self.floor}/status'
+            self.re_topic = re.compile(r'^(?P<location>[^/]+)/(?P<capability>[^/]+)/controllers/(?P<floor>[^/]+)/manage$')
+            if self.floor and self.pin:
+                self.log.debug(f"Initialize pump for '{self.floor}' on pin '{self.pin}'")
+                self.io = digitalio.DigitalInOut(self.pin)
+                self.io.direction = digitalio.Direction.OUTPUT
+                self.turn_on()
+                self.turn_off()
 
-        self.initIO()
-
-    def initIO(self):
-        if self.floor and self.pin:
-            self.logger.debug(
-                'Initialize pump for {floor} on pin {pin}'.format(
-                    floor=self.floor,
-                    pin=self.pin))
-            self.io = digitalio.DigitalInOut(self.pin)
-            self.io.direction = digitalio.Direction.OUTPUT
-            self.turnOn()
-            self.turnOff()
-
-    def turnOn(self):
+    def turn_on(self):
         self.io.value = False
         self.io_state = False
         time.sleep(0.5)
         return self
 
-    def turnOff(self):
+    def turn_off(self):
         self.io.value = True
         self.io_state = True
         time.sleep(0.5)
         return self
 
-    def getState(self):
-        if self.io.value:
-            return 'Off'
-        return 'On'
-
-    def changeState(self,new_state):
-        self.logger.debug('We got a requst to turn the pump {} which is currently {}.'.format(new_state,self.getState()))
-        if isinstance(new_state, str) :
-            new_state = self.str2state(new_state)
+    def change_state(self,new_state):
         if new_state != self.io.value:
-            self.logger.debug('State changed to {}'.format(new_state))
+            self.log.debug('State changed to {}'.format(new_state))
+            if hasattr(self,'_provider_topic'):
+                self.log.debug(f"Publishing state change to '{self._provider_topic}': {new_state}")
+                self.controller.connection.publish(self._provider_topic,payload=new_state,retain=True)
             self.io.value = new_state
 
     def str2state(self,string):
         return string.lower() not in ('yes', 'true', 't', '1', 'on')
+
+    def process_message(self, client, userdata, msg):
+        if hasattr(msg,'topic') and hasattr(msg,'payload'):
+            self.log.debug(f'We got a message in topic {msg.topic}')
+            if self.re_topic.match(msg.topic):
+                state = self.str2state(msg.payload.decode('utf-8'))
+                self.log.debug(f'''We got a request to change our state to '{msg.payload.decode('utf-8')}'.''')
+                self.log.debug(f'''Our current state is '{self.state}'.''')
+                self.change_state(state)
+
+    @property
+    def state(self):
+        if hasattr(self,'io'):
+            if hasattr(self.io,'value'):
+                if self.io.value:
+                    return 'Off'
+                return 'On'
+        return None
+
+    @property
+    def log(self):
+        if hasattr(self.controller,'log'):
+            return self.controller.log
+        return None
+
+    @property
+    def location(self):
+        if hasattr(self.controller,'location'):
+            return self.controller.location
+        return None
+    
+    @property
+    def capability(self):
+        if hasattr(self.controller,'capability'):
+            return self.controller.capability
+        return None
+
+    @property
+    def provide(self):
+        if hasattr(self.controller,'provide'):
+            return self.controller.provide
+        return None
+
+    @property
+    def floor(self):
+        if hasattr(self.controller,'floor'):
+            return self.controller.floor
+        return 'default'
+
+    @property
+    def pin(self):
+        if hasattr(self.controller,'pin'):
+            if hasattr(board,self.controller.pin):
+                return getattr(board,self.controller.pin)
+        return None

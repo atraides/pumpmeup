@@ -22,7 +22,7 @@ class PMUSensor:
     def read_sensor(self):
         if hasattr(self,'_device'):
             for measurement in self.provide:
-                sensor = '/'.join([self.location,self.capability,self.floor,self.room,measurement])
+                sensor = '/'.join([self.location,self.capability,'sensors',self.floor,self.room,measurement])
                 self.log.debug(f"Attempting to read sensor {sensor}.")
                 reading = None
                 while not reading:

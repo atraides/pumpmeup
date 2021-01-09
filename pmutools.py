@@ -10,9 +10,9 @@ from typing import NamedTuple
 
 from pprint import pprint
 
-from lib.pmu.PMUSensor import PMUSensor
-from lib.pmu.PMUController import PMUController
-from lib.pmu.PMUConnection import PMUConnection
+from pmu.PMUSensor import PMUSensor
+from pmu.controller import PMUController
+from pmu.PMUConnection import PMUConnection
 
 class PMUManager():
     def __init__(self,arguments={}):
