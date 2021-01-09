@@ -1,6 +1,0 @@
-mqtt:
-  client_name: PMUPumpLogistics
-  broker: 127.0.0.1
-  topic: 
-    - ['v1/+/+/+/temperature',1]
-  regex: '^v1/(?P<place>[^/]+)/(?P<floor>[^/]+)/(?P<room>[^/]+)/(?P<measurement>[^/]+)$'

@@ -1,0 +1,83 @@
+location: millhouse
+hvac:
+    sensors:
+        -
+            pin: D4
+            provide: 
+                - temperature
+            floor: basement
+            room: cinema
+            model: DHT22
+    controllers:
+        -
+            pin: D23
+            type: pump
+            subtype: relay
+            floor: basement
+            provide:
+                - status
+            consume:
+                - manage
+            interval: 120
+        -
+            pin: D24
+            type: pump
+            subtype: relay
+            floor: ground
+            provide:
+                - status
+            consume:
+                - manage
+            interval: 120
+connection:
+    mqtt:
+        broker: 127.0.0.1
+bridges:
+    influxdb:
+        topics: 
+            - ['+/hvac/sensors/+/+/temperature',1]
+            - ['+/hvac/controllers/+/status',1]
+        regex: (?P<place>[^/]+)/(?P<capability>[^/]+)/(sensors|controllers)/(?P<floor>[^/]+)/((?P<room>[^/]+)/)?(?P<measurement>[^/]+)$
+        address: 127.0.0.1
+        user: username
+        password: SuperSecretPassword
+        database: database
+        interval: 120
+
+logger:
+    version: 1
+    disable_existing_loggers: true
+
+    formatters:
+        default:
+            format: "[%(processName)s] %(name)s - %(levelname)s: %(message)s"
+        debug:
+            format: "%(asctime)s - [%(threadName)s] %(module)s - %(levelname)s: %(message)s"
+
+    handlers:
+        syslog:
+            class: logging.handlers.SysLogHandler
+            level: INFO
+            formatter: default
+            address: /dev/log
+            facility: local0
+
+        stdout:
+            class: logging.StreamHandler
+            level: DEBUG
+            stream: ext://sys.stdout
+            formatter: debug
+
+    root:
+        level: DEBUG
+        handlers: [stdout]
+        propagate: no
+
+    loggers:
+        main:
+            level: INFO
+            handlers: [syslog]
+            propagate: no
+        debug:
+            level: DEBUG
+            propagate: yes

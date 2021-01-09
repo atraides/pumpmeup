@@ -38,7 +38,7 @@ class MQTTClient(mqtt.Client):
         while not self.connected_flag:
             if rc==0:
                 self.connected_flag=True #set flag
-                self.logger.info("MQTT connection succesful.")
+                self.logger.info("MQTT connection successful.")
                 if hasattr(self.config,'topic'):
                     self.logger.info('Subscribing to topic: {topic}'.format(topic=self.config.topic))
                     self.subscribe(self.config.topic)
@@ -50,7 +50,9 @@ class MQTTClient(mqtt.Client):
         self.logger.info('New message in \'{topic}\' with payload {payload}'.format(topic=msg.topic,payload=str(msg.payload)))
 
     def shutdown(self):
+        self.logger.debug('Stopping the loop.')
         self.loop_stop
+        self.logger.debug('Disconnecting from the broker.')
         self.disconnect()
 
     def get_connection_options(self):
@@ -59,7 +61,7 @@ class MQTTClient(mqtt.Client):
             options.append(self.config.broker)
         if hasattr(self.config,'port'): 
             options.append(self.config.port)
-        if hasattr(self.config,'keepalive'): o
+        if hasattr(self.config,'keepalive'):
             options.append(self.config.keepalive)
         
         self.logger.info('We have the following connection options: [{}].'.format(', '.join(map(str,options))))
@@ -69,7 +71,7 @@ class MQTTClient(mqtt.Client):
         if hasattr(self.config,'broker'):
             while True:
                 try:
-                    self.logger.info('Connecting to {broker}.'.format(broker=self.config.broker))
+                    self.logger.info(f'Connecting to {self.config.broker}.')
                     self.connect(*self.get_connection_options())
                     break
                 except OSError as error:
@@ -77,4 +79,3 @@ class MQTTClient(mqtt.Client):
                         self.logger.warning('Can\'t connect to the MQTT broker (No route to host).')
                 self.logger.warning('MQTT connection failed. Retrying in {retry} seconds.'.format(retry=retry))
                 time.sleep(retry)
-            
