@@ -8,11 +8,9 @@ from pathlib import Path
 from yaml import safe_load
 from typing import NamedTuple
 
-from pprint import pprint
-
-from pmu.PMUSensor import PMUSensor
+from pmu.sensor import PMUSensor
 from pmu.controller import PMUController
-from pmu.PMUConnection import PMUConnection
+from pmu.connection import PMUConnection
 from pmu.bridge import PMUBridge
 
 class PMUManager():
@@ -20,7 +18,6 @@ class PMUManager():
         for key in vars(arguments):
             self.set_arguments(name=key,arguments=arguments)
 
-        self.base_dir = Path(os.path.dirname(os.path.realpath(__file__)))
         self.load_config()
 
         signal.signal(signal.SIGTERM, self.signal_catcher)

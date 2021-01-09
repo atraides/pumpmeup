@@ -3,7 +3,6 @@ import board
 import adafruit_dht
 
 from pmu.pump import PMUPump
-from pprint import pprint
 
 class PMUController:
     def __init__(self,config={}):

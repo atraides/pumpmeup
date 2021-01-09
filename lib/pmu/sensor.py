@@ -2,8 +2,6 @@ import time
 import board
 import adafruit_dht
 
-from pprint import pprint
-
 class PMUSensor:
     def __init__(self,config={}):
         for key in config:

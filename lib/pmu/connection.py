@@ -1,7 +1,6 @@
 import sys
 import time
 
-from pprint import pprint
 from .MQTTClient import MQTTClient
 
 class PMUConnection():

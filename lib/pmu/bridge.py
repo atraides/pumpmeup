@@ -1,11 +1,9 @@
 import re
 import time
-import pmutools
+import pmu.manager
 
 from typing import NamedTuple
 from influxdb import InfluxDBClient
-
-from pprint import pprint
 
 class SensorData(NamedTuple):
     location: str
@@ -113,7 +111,7 @@ class PMUBridge:
     def manager(self):
         if 'manager' in self.config:
             manager = self.config.get('manager')
-            if isinstance(manager,pmutools.PMUManager):
+            if isinstance(manager,pmu.manager.PMUManager):
                 return manager
         return None
 

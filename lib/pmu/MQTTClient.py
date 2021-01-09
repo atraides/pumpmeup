@@ -79,4 +79,3 @@ class MQTTClient(mqtt.Client):
                         self.logger.warning('Can\'t connect to the MQTT broker (No route to host).')
                 self.logger.warning('MQTT connection failed. Retrying in {retry} seconds.'.format(retry=retry))
                 time.sleep(retry)
-            

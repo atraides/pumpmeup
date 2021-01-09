@@ -31,17 +31,17 @@ hvac:
             interval: 120
 connection:
     mqtt:
-        broker: 10.42.0.218
+        broker: 127.0.0.1
 bridges:
     influxdb:
         topics: 
             - ['+/hvac/sensors/+/+/temperature',1]
             - ['+/hvac/controllers/+/status',1]
         regex: (?P<place>[^/]+)/(?P<capability>[^/]+)/(sensors|controllers)/(?P<floor>[^/]+)/((?P<room>[^/]+)/)?(?P<measurement>[^/]+)$
-        address: 10.42.0.218
-        user: telegraf
-        password: Welcome1
-        database: telegraf
+        address: 127.0.0.1
+        user: username
+        password: SuperSecretPassword
+        database: database
         interval: 120
 
 logger:
