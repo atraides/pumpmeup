@@ -32,11 +32,11 @@ class PMUPump:
 
     def change_state(self,new_state):
         if new_state != self.io.value:
-            self.log.debug('State changed to {}'.format(new_state))
-            if hasattr(self,'_provider_topic'):
-                self.log.debug(f"Publishing state change to '{self._provider_topic}': {new_state}")
-                self.controller.connection.publish(self._provider_topic,payload=new_state,retain=True)
             self.io.value = new_state
+            self.log.debug(f'State changed to {self.state}')
+            if hasattr(self,'_provider_topic'):
+                self.log.debug(f"Publishing state change to '{self._provider_topic}': {self.state}")
+                self.controller.connection.publish(self._provider_topic,payload=self.state,retain=True)
 
     def str2state(self,string):
         return string.lower() not in ('yes', 'true', 't', '1', 'on')

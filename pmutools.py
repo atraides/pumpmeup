@@ -13,6 +13,7 @@ from pprint import pprint
 from pmu.PMUSensor import PMUSensor
 from pmu.controller import PMUController
 from pmu.PMUConnection import PMUConnection
+from pmu.bridge import PMUBridge
 
 class PMUManager():
     def __init__(self,arguments={}):
@@ -132,6 +133,33 @@ class PMUManager():
                 thread.join()
         self.log.debug(f'All controllers stopped.')
 
+    def load_bridges(self):
+        ''' Add more validation to the load sequence. '''
+        self._bridges=[]
+        if 'bridges' in self.config:
+            for bridge in self.config.get('bridges'):
+                _bridge_config = self.config.get('bridges').get(bridge) # This is ugly af and need to be fixed.
+                self.log.info(f"Initialzing bridge '{bridge}.")
+                _bridge = PMUBridge({**_bridge_config,'manager':self})
+                self._bridges.append(_bridge)
+
+    def start_bridges(self):
+        self._bridge_threads = []
+        self._bridge_exit = threading.Event()
+        for bridge in self.bridges:
+            thread = threading.Thread(target=bridge.run, args=(self._bridge_exit,))
+            thread.name = f'PMUBridge-influxdb'
+            thread.start()
+            self._bridge_threads.append(thread)
+
+    def stop_bridges(self):
+        self.log.debug(f'Stopping all bridges.')
+        if hasattr(self,'_bridge_threads'):
+            for thread in self._bridge_threads:
+                self._bridge_exit.set()
+                thread.join()
+        self.log.debug(f'All controllers stopped.')
+
     def signal_catcher(self, signalNumber, frame):
         if signalNumber == signal.SIGTERM: # SIGTERM
             self.log.info('SIGTERM received! Quitting.')
@@ -145,6 +173,7 @@ class PMUManager():
     def graceful_exit(self):
         self.stop_sensors()
         self.stop_controllers()
+        self.stop_bridges()
 
     @property
     def sensors(self):
@@ -158,6 +187,12 @@ class PMUManager():
             self.load_controllers()
         return self._controllers
 
+    @property
+    def bridges(self):
+        if not hasattr(self,'_bridges'):
+            self.load_bridges()
+        return self._bridges
+        
     @property
     def connection(self):
         if not hasattr(self,'_connection'):
