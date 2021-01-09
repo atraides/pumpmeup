@@ -1,7 +1,3 @@
-import time
-import board
-import adafruit_dht
-
 from pmu.pump import PMUPump
 
 class PMUController:

@@ -1,4 +1,3 @@
-import os
 import sys
 import signal
 import threading
@@ -6,7 +5,6 @@ import logging.config
 
 from pathlib import Path
 from yaml import safe_load
-from typing import NamedTuple
 
 from pmu.sensor import PMUSensor
 from pmu.controller import PMUController

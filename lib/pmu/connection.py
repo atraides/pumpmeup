@@ -1,6 +1,3 @@
-import sys
-import time
-
 from .MQTTClient import MQTTClient
 
 class PMUConnection():
