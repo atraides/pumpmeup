@@ -12,9 +12,10 @@ from pmu.connection import PMUConnection
 from pmu.bridge import PMUBridge
 
 class PMUManager():
-    def __init__(self,arguments={}):
-        for key in vars(arguments):
-            self.set_arguments(name=key,arguments=arguments)
+    def __init__(self,arguments=None):
+        if arguments:
+            for key in vars(arguments):
+                self.set_arguments(name=key,arguments=arguments)
 
         self.load_config()
 
@@ -187,7 +188,7 @@ class PMUManager():
         if not hasattr(self,'_bridges'):
             self.load_bridges()
         return self._bridges
-        
+
     @property
     def connection(self):
         if not hasattr(self,'_connection'):

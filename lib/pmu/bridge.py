@@ -18,7 +18,7 @@ class StatusData(NamedTuple):
 class PMUBridge:
     '''
     For now we hardcode the influxdb bridge as this is the
-    only one currently supported. However, in the future this 
+    only one currently supported. However, in the future this
     library should be responsible to determine the correct module
     and execute it
     '''
@@ -80,20 +80,20 @@ class PMUBridge:
             }]
             self.client.write_points(json_body)
 
-    def run(self,exit):
+    def run(self,exit_event):
         if hasattr(self, 'connection') and self.topics:
             self.connection.connect(self.topics)
             if callable(self.parse_message):
                 self.connection.on_message(self.parse_message)
-            while not exit.is_set():
-                exit.wait(self.interval)
+            while not exit_event.is_set():
+                exit_event.wait(self.interval)
             self.stop()
 
     def stop(self):
         self.log.debug(f'Stopping bridge.')
         if hasattr(self,'connection'):
             self.connection.disconnect()
-        self.log.debug(f'Bridge is stopped.')        
+        self.log.debug(f'Bridge is stopped.')
 
     @property
     def client(self):
@@ -119,7 +119,7 @@ class PMUBridge:
     def log(self):
         if hasattr(self.manager,'log'):
             return self.manager.log
-        return None            
+        return None
 
     @property
     def connection(self):

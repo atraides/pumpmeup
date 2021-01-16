@@ -3,15 +3,16 @@ import board
 import adafruit_dht
 
 class PMUSensor:
-    def __init__(self,config={}):
-        for key in config:
-            self.set_arguments(name=key,config=config)
+    def __init__(self,config:dict=None):
+        if config and isinstance(config,dict):
+            for key in config:
+                self.set_arguments(name=key,config=config)
 
-        if hasattr(self, '_dht_device') and hasattr(self, 'pin'):
-            self._device = self._dht_device(self.pin)
+            if hasattr(self, '_dht_device') and hasattr(self, 'pin'):
+                self._device = self._dht_device(self.pin)
 
-        if hasattr(self, 'connection'):
-            self.connection.connect()
+            if hasattr(self, 'connection'):
+                self.connection.connect()
 
     def set_arguments(self,name=None,config=None):
         if name in config:
@@ -37,10 +38,10 @@ class PMUSensor:
                         self._device.exit()
                         raise error
 
-    def start_sensor(self,exit):
-        while not exit.is_set():
+    def start_sensor(self,exit_event):
+        while not exit_event.is_set():
             self.read_sensor()
-            exit.wait(self.interval)
+            exit_event.wait(self.interval)
         self.stop_sensor()
 
     def stop_sensor(self):

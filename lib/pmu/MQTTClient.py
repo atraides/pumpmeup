@@ -43,7 +43,7 @@ class MQTTClient(mqtt.Client):
                     self.logger.info('Subscribing to topic: {topic}'.format(topic=self.config.topic))
                     self.subscribe(self.config.topic)
             else:
-                self.logger.warning("MQTT connection failed with return code=",rc)
+                self.logger.warning(f'MQTT connection failed with return code={rc}')
             time.sleep(1)
 
     def on_message(self, client, userdata, msg):
@@ -57,13 +57,13 @@ class MQTTClient(mqtt.Client):
 
     def get_connection_options(self):
         options = []
-        if hasattr(self.config,'broker'): 
+        if hasattr(self.config,'broker'):
             options.append(self.config.broker)
-        if hasattr(self.config,'port'): 
+        if hasattr(self.config,'port'):
             options.append(self.config.port)
         if hasattr(self.config,'keepalive'):
             options.append(self.config.keepalive)
-        
+
         self.logger.info('We have the following connection options: [{}].'.format(', '.join(map(str,options))))
         return options
 

@@ -38,9 +38,6 @@ class PMUPump:
                 self.log.debug(f"Publishing state change to '{self._provider_topic}': {self.state}")
                 self.controller.connection.publish(self._provider_topic,payload=self.state,retain=True)
 
-    def str2state(self,string):
-        return string.lower() not in ('yes', 'true', 't', '1', 'on')
-
     def process_message(self, client, userdata, msg):
         if hasattr(msg,'topic') and hasattr(msg,'payload'):
             self.log.debug(f'We got a message in topic {msg.topic}')
@@ -95,3 +92,6 @@ class PMUPump:
             if hasattr(board,self.controller.pin):
                 return getattr(board,self.controller.pin)
         return None
+
+def str2state(string):
+    return string.lower() not in ('yes', 'true', 't', '1', 'on')

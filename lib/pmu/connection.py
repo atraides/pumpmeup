@@ -1,11 +1,12 @@
 from .MQTTClient import MQTTClient
 
 class PMUConnection():
-    def __init__(self,config={}):
-        for key in config:
-            self.set_arguments(name=key,config=config)
+    def __init__(self,config:dict=None):
+        if config:
+            for key in config:
+                self.set_arguments(name=key,config=config)
 
-    def set_arguments(self,name=None,config=None):
+    def set_arguments(self,name:str=None,config:dict=None):
         if name in config:
             setattr(self, name ,config.get(name))
 
@@ -26,7 +27,7 @@ class PMUConnection():
                 self._client = MQTTClient(mqtt_config)
                 self._client.safe_connect()
                 self._client.loop_start()
-    
+
     def publish(self,topic=None,payload=None,qos=1,retain=False):
         if topic and payload:
             self.log.debug(f"Publishing {payload} to {topic}.")
